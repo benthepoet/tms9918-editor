@@ -14,8 +14,13 @@ typedef struct
 SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Event event;
+SDL_Rect pattern_rect = {
+    .w = 0x20,
+    .h = 0x20
+};
 
 int running = 1;
+int pattern_boundary = PATTERN_SIZE << 5;
 int pattern[PATTERN_SIZE] = {
     0x08,
     0x10,
@@ -40,19 +45,15 @@ void draw()
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
     SDL_RenderClear(renderer);
 
-    SDL_Rect rect;
-    rect.w = 0x20;
-    rect.h = 0x20;
+    pattern_rect.y = 0;
 
     for (int i = 0; i < PATTERN_SIZE; i++)
     {
-        rect.x = (PATTERN_SIZE - 1) * rect.w;
-        rect.y = i * rect.h;
+        pattern_rect.x = (PATTERN_SIZE - 1) << 5;
 
         for (int j = 0; j < PATTERN_SIZE; j++)
         {
-            int k = (pattern[i] >> j) & 1;
-            if (k)
+            if ((pattern[i] >> j) & 1)
             {
                 SDL_SetRenderDrawColor(renderer, fg_color.r, fg_color.g, fg_color.b, 0xff);
             }
@@ -61,10 +62,12 @@ void draw()
                 SDL_SetRenderDrawColor(renderer, bg_color.r, bg_color.g, bg_color.b, 0xff);
             }
 
-            SDL_RenderFillRect(renderer, &rect);
+            SDL_RenderFillRect(renderer, &pattern_rect);
 
-            rect.x -= 0x20;
+            pattern_rect.x -= 0x20;
         }
+
+        pattern_rect.y += 0x20;
 
         printf("%02x ", pattern[i]);
     }
@@ -111,11 +114,13 @@ int main()
                 case SDL_MOUSEBUTTONUP:
                     if (event.button.button == SDL_BUTTON_LEFT)
                     {
-                        int l = PATTERN_SIZE << 5;
-                        if ((event.button.x >= 0 && event.button.x <= l) && (event.button.y >= 0 && event.button.y <= l))
+                        char within_x = event.button.x >= 0 && event.button.x <= pattern_boundary;
+                        char within_y = event.button.y >= 0 && event.button.y <= pattern_boundary;
+
+                        if (within_x && within_y)
                         {
                             int y = event.button.y >> 5;
-                            int x = (l - event.button.x) >> 5;
+                            int x = (pattern_boundary - event.button.x) >> 5;
 
                             toggle_bit(x, y);
                             draw();
