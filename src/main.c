@@ -111,10 +111,11 @@ int main()
                 case SDL_MOUSEBUTTONUP:
                     if (event.button.button == SDL_BUTTON_LEFT)
                     {
-                        if ((event.button.x >= 0 && event.button.x <= PATTERN_SIZE << 5) && (event.button.y >= 0 && event.button.y <= PATTERN_SIZE << 5))
+                        int l = PATTERN_SIZE << 5;
+                        if ((event.button.x >= 0 && event.button.x <= l) && (event.button.y >= 0 && event.button.y <= l))
                         {
                             int y = event.button.y >> 5;
-                            int x = ((PATTERN_SIZE << 5) - event.button.x) >> 5;
+                            int x = (l - event.button.x) >> 5;
 
                             toggle_bit(x, y);
                             draw();
