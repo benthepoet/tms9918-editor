@@ -17,18 +17,23 @@ SDL_Event event;
 
 int running = 1;
 int pattern[PATTERN_SIZE] = {
-    0x00,
-    0x00,
-    0x04,
-    0x06,
-    0xff,
-    0x06,
-    0x04,
+    0x08,
+    0x10,
+    0x3c,
+    0x5e,
+    0x4e,
+    0x66,
+    0x3c,
     0x00
 };
 
 Color bg_color = { .r = 0xff, .g = 0xff, .b = 0xff };
 Color fg_color = { .r = 0xb2, .g = 0xb2, .b = 0xb2 };
+
+void toggle_bit(int x, int y)
+{
+    pattern[y] ^= 1 << x;
+}
 
 void draw()
 {
@@ -47,9 +52,6 @@ void draw()
         for (int j = 0; j < PATTERN_SIZE; j++)
         {
             int k = (pattern[i] >> j) & 1;
-            int e = pattern[i] >> j;
-            printf("%d, %d, %d\n", rect.x, rect.y, e);
-
             if (k)
             {
                 SDL_SetRenderDrawColor(renderer, fg_color.r, fg_color.g, fg_color.b, 0xff);
@@ -63,7 +65,11 @@ void draw()
 
             rect.x -= 0x20;
         }
+
+        printf("%02x ", pattern[i]);
     }
+
+    printf("\n");
 
     SDL_RenderPresent(renderer);
 }
@@ -90,12 +96,10 @@ int main()
 
     printf("SDL Renderer: %s\n", renderer_info->name);
 
+    draw();
+
     while (running != 0)
     {
-        draw();
-
-        SDL_Delay(2000);
-
         while (SDL_PollEvent(&event))
         {
             switch (event.type)
@@ -103,6 +107,19 @@ int main()
                 case SDL_QUIT:
                     running = 0;
                     break;
+
+                case SDL_MOUSEBUTTONUP:
+                    if (event.button.button == SDL_BUTTON_LEFT)
+                    {
+                        if ((event.button.x >= 0 && event.button.x <= PATTERN_SIZE << 5) && (event.button.y >= 0 && event.button.y <= PATTERN_SIZE << 5))
+                        {
+                            int y = event.button.y >> 5;
+                            int x = ((PATTERN_SIZE << 5) - event.button.x) >> 5;
+
+                            toggle_bit(x, y);
+                            draw();
+                        }
+                    }
             }
         }
     }
