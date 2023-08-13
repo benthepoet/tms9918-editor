@@ -45,11 +45,10 @@ void draw()
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
     SDL_RenderClear(renderer);
 
-    pattern_rect.y = 0;
-
     for (int i = 0; i < PATTERN_SIZE; i++)
     {
         pattern_rect.x = (PATTERN_SIZE - 1) << 5;
+        pattern_rect.y = i << 5;
 
         for (int j = 0; j < PATTERN_SIZE; j++)
         {
@@ -66,8 +65,6 @@ void draw()
 
             pattern_rect.x -= 0x20;
         }
-
-        pattern_rect.y += 0x20;
 
         printf("%02x ", pattern[i]);
     }
